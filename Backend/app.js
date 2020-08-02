@@ -3,23 +3,23 @@
 // cargar modulos de node para crear servidor
 
 
-var express = require('express');
+import express from 'express';
 
-var bodyParser = require('body-parser');
+import { urlencoded, json } from 'body-parser';
 
 //Ejecutar express (http)
 
-var app = express();
+const app = express();
 
 //cargar ficheros rutas
-var article_routes = require('./routes/article');
+import article_routes from './routes/article';
 
 
 
 //middlewares
 
-app.use(bodyParser.urlencoded({extend:false}));
-app.use(bodyParser.json());
+app.use(urlencoded({extend:false}));
+app.use(json());
 
 // CORS 
 
@@ -38,4 +38,4 @@ app.use('/api', article_routes);
 
 //Exportar modulo(fichero actual)
 
-module.exports = app;
+export default app;
