@@ -1,12 +1,12 @@
 'use strict'
 
-var validator = require('validator');
-var fs = require('fs');
-var path = require('path');
+import { isEmpty } from 'validator';
+import { unlink, exists as _exists } from 'fs';
+import { resolve } from 'path';
 
-var Article = require('../models/article');
+import Article, { find, findById, findByIdAndUpdate, findOneAndDelete, findOneAndUpdate } from '../models/article';
 
-var controller = {
+const controller = {
 
     datosBlog: (req, res) => {
         var hola = req.body.hola;
@@ -34,8 +34,8 @@ test: (req, res) => {
     // validar los datos ( validator)
     try{
 
-        var validate_title = !validator.isEmpty(params.title);
-        var validate_content = !validator.isEmpty(params.content);
+        var validate_title = !isEmpty(params.title);
+        var validate_content = !isEmpty(params.content);
 
     }catch(err){
         return res.status(200).send({
@@ -88,7 +88,7 @@ test: (req, res) => {
 
 getArticles: (req, res) => {
 
-    var query = Article.find({});
+    var query = find({});
 
     var last = req.params.last;
 
@@ -131,7 +131,7 @@ getArticle: (req,res) => {
 }
 // buscar el articulo
 
-    Article.findById(articleId, (err, article) => {
+    findById(articleId, (err, article) => {
 
         if(err || !article){
             return res.status(404).send({
@@ -157,8 +157,8 @@ getArticle: (req,res) => {
 
     // Validar datos
     try{
-        var validate_title = !validator.isEmpty(params.title);
-        var validate_content = !validator.isEmpty(params.content);
+        var validate_title = !isEmpty(params.title);
+        var validate_content = !isEmpty(params.content);
     }catch(err){
         return res.status(200).send({
             status: 'error',
@@ -168,7 +168,7 @@ getArticle: (req,res) => {
     if(validate_title && validate_content){
         // find and update
 
-        Article.findByIdAndUpdate({_id: articleId}, params,{new:true}, (err, articleUpdated) => {
+        findByIdAndUpdate({_id: articleId}, params,{new:true}, (err, articleUpdated) => {
 
             if(err){
                 return res.status(500).send({
@@ -205,7 +205,7 @@ delete: (req, res) =>{
 
     // find and delete
 
-    Article.findOneAndDelete({_id: articleId}, (err, articleRemoved) => {
+    findOneAndDelete({_id: articleId}, (err, articleRemoved) => {
 
         if(err){
             return res.status(500).send({
@@ -261,7 +261,7 @@ delete: (req, res) =>{
 
             // borrar el archivo subido
 
-            fs.unlink(file_path,(err) => {
+            unlink(file_path,(err) => {
              return res.status(200).send({
              status: 'error',
              message: 'La extensión de la imagen no es valida!!!'
@@ -274,7 +274,7 @@ delete: (req, res) =>{
            
             if(articleId){
                 // Buscar el articulo, asignarle el nombre de la imagen y actualizarlo
-                Article.findOneAndUpdate({_id: articleId}, {image: file_name}, {new:true}, (err, articleUpdated) => {
+                findOneAndUpdate({_id: articleId}, {image: file_name}, {new:true}, (err, articleUpdated) => {
 
                     if(err || !articleUpdated){
                         return res.status(200).send({
@@ -302,9 +302,9 @@ delete: (req, res) =>{
     var file = req.params.image;
     var path_file = './upload/articles/'+file;
 
-    fs.exists(path_file,(exists)=>{
+    _exists(path_file,(exists)=>{
         if(exists){
-            return res.sendFile(path.resolve(path_file));
+            return res.sendFile(resolve(path_file));
         }else{
             return res.status(404).send({
                 status: 'error',
@@ -318,7 +318,7 @@ delete: (req, res) =>{
     var searchString = req.params.search;
     // find or
 
-    Article.find({"$or":[
+    find({"$or":[
         { "title": { "$regex": searchString, "$options": "i"}},
         { "content": { "$regex": searchString, "$options": "i"}}
     ]})
@@ -348,4 +348,4 @@ delete: (req, res) =>{
 
 };// end controller
  
-module.exports = controller;
+export default controller;
